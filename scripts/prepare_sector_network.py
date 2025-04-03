@@ -3256,14 +3256,6 @@ def add_biomass(
 
     biomass_potentials = pd.read_csv(biomass_potentials_file, index_col=0)
 
-    nhours = n.snapshot_weightings.generators.sum()
-    if nhours < 8760:
-        logger.warning(
-            "The length of the optimization horizon is less than 1 year."
-            "Assuming biomass potentails are equally distributed over the year."
-        )
-        biomass_potentials *= nhours / 8760
-
     # need to aggregate potentials if gas not nodally resolved
     if (
         options["gas_network"]
