@@ -11,6 +11,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 import pypsa
+from add_electricity import sanitize_carriers
 from add_existing_baseyear import add_build_year_to_new_assets
 from pypsa.descriptors import expand_series
 from six import iterkeys
@@ -21,10 +22,6 @@ from scripts._helpers import (
     set_scenario_config,
     update_config_from_wildcards,
 )
-from add_electricity import sanitize_carriers
-from add_existing_baseyear import add_build_year_to_new_assets
-from pypsa.descriptors import expand_series
-from six import iterkeys
 
 logger = logging.getLogger(__name__)
 
@@ -627,9 +624,9 @@ def update_heat_pump_efficiency(n: pypsa.Network, years: List[int]):
             (year, slice(None)), heat_pump_idx.str[:-4] + str(year)
         ]
         # in <year>, set the efficiency of all heat pumps to the correct efficiency
-        n.links_t["efficiency"].loc[
-            (year, slice(None)), heat_pump_idx
-        ] = correct_efficiency.values
+        n.links_t["efficiency"].loc[(year, slice(None)), heat_pump_idx] = (
+            correct_efficiency.values
+        )
 
 
 if __name__ == "__main__":

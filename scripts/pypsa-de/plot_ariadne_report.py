@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
 import logging
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-import locale
-from datetime import datetime
 from itertools import compress, islice
 from multiprocessing import Pool
 
@@ -17,15 +14,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pypsa
-from export_ariadne_variables import get_discretized_value, process_postnetworks
-from matplotlib.lines import Line2D
+from export_ariadne_variables import process_postnetworks
 from matplotlib.patches import Patch
 from matplotlib.ticker import FuncFormatter
 from pypsa.plot import add_legend_circles, add_legend_lines, add_legend_patches
 
-from scripts._helpers import configure_logging, mock_snakemake, set_scenario_config
-from scripts.plot_power_network import load_projection, assign_location
-from scripts.plot_summary import preferred_order, rename_techs
+from scripts._helpers import configure_logging, mock_snakemake
+from scripts.plot_power_network import assign_location
 from scripts.prepare_sector_network import prepare_costs
 
 logger = logging.getLogger(__name__)
@@ -350,7 +345,7 @@ carriers_in_german = {
 ####### functions #######
 def get_condense_sum(df, groups, groups_name, return_original=False):
     """
-    return condensed df, that has been groupeb by condense groups
+    Return condensed df, that has been groupeb by condense groups
     Arguments:
         df: df you want to condense (carriers have to be in the columns)
         groups: group labels you want to condense on
@@ -579,8 +574,7 @@ def plot_nodal_elec_balance(
         # set limits of secondary y-axis
         ax2.set_ylim(
             [
-                -1.5
-                * lmps.max(),
+                -1.5 * lmps.max(),
                 # TODO rescale
                 # * abs(df_neg.sum(axis=1).min())
                 # / df_pos.sum(axis=1).max(),
@@ -707,7 +701,6 @@ def plot_nodal_heat_balance(
     ylabel="total electricity balance [GW]",
     title="Electricity balance",
 ):
-
     carriers = carriers
     loads = loads
     start_date = start_date
@@ -1090,7 +1083,7 @@ def plot_storage(
                 mec="black",
             )
 
-    ax2.set_title(f"Speicherstand der Langzeitspeicher Technologiemix 2045")
+    ax2.set_title("Speicherstand der Langzeitspeicher Technologiemix 2045")
     ax1.set_title(
         f"State of charge of mid- and long-term storage technologies({model_run})"
     )
@@ -1120,7 +1113,6 @@ def plot_price_duration_curve(
     y_lim_values=[-50, 300],
     language="english",
 ):
-
     # only plot 2030 onwards
     years = years[2:]
     networks = dict(islice(networks.items(), 2, None))
@@ -1159,9 +1151,9 @@ def plot_price_duration_curve(
         )
         ax.set_title(
             (
-                f"Strompreisdauerlinien"
+                "Strompreisdauerlinien"
                 if language == "german"
-                else f"Electricity price duration curves"
+                else "Electricity price duration curves"
             ),
             fontsize=16,
         )
@@ -1186,7 +1178,6 @@ def plot_price_duration_hist(
     regions=["DE"],
     x_lim_values=[-50, 300],
 ):
-
     # only plot 2030 onwards
     years = years[2:]
     networks = dict(islice(networks.items(), 2, None))
@@ -1217,7 +1208,7 @@ def plot_price_duration_hist(
         axes[i].legend()
 
     axes[i].set_xlabel("Strompreis [$EUR/MWh_{el}$]")
-    plt.suptitle(f"Strompreise", fontsize=16, y=0.99)
+    plt.suptitle("Strompreise", fontsize=16, y=0.99)
     fig.tight_layout()
     fig.savefig(savepath, bbox_inches="tight")
     plt.close()
@@ -1228,7 +1219,6 @@ def plot_price_duration_hist(
 def plot_backup_capacity(
     networks, tech_colors, savepath, backup_techs, vre_gens, region="DE"
 ):
-
     kwargs = {
         "groupby": ["name", "bus", "carrier"],
         "nice_names": False,
@@ -1237,7 +1227,6 @@ def plot_backup_capacity(
     df_all = pd.DataFrame()
 
     for year in np.arange(2020, 2050, 5):
-
         n = networks[year]
 
         electricity_cap = (
@@ -1348,7 +1337,6 @@ def plot_backup_capacity(
 def plot_backup_generation(
     networks, tech_colors, savepath, backup_techs, vre_gens, region="DE"
 ):
-
     tech_colors["coal"] = "black"
 
     kwargs = {
@@ -1466,7 +1454,6 @@ def plot_backup_generation(
 def plot_elec_prices_spatial(
     network, tech_colors, savepath, onshore_regions, year="2045", region="DE"
 ):
-
     # onshore_regions = gpd.read_file("/home/julian-geis/repos/pypsa-ariadne-1/resources/20241203-force-onwind-south-49cl-disc/KN2045_Bal_v4/regions_onshore_base_s_49.geojson")
     # onshore_regions = onshore_regions.set_index('name')
 
@@ -2398,7 +2385,6 @@ def plot_cap_map_de(
     regions_de,
     savepath,
 ):
-
     m = network.copy()
     m.mremove("Bus", m.buses[m.buses.x == 0].index)
     m.buses.drop(m.buses.index[m.buses.carrier != "AC"], inplace=True)
@@ -2828,9 +2814,7 @@ if __name__ == "__main__":
                 _costs,
                 snakemake.params.costs,
                 nyears,
-            ).multiply(
-                1e-9
-            ),  # in bn EUR
+            ).multiply(1e-9),  # in bn EUR
             snakemake.input.costs,
         )
     )

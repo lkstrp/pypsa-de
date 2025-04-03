@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
 import logging
-import os
-import sys
 
 import geopandas as gpd
 import numpy as np
@@ -9,11 +6,7 @@ import pandas as pd
 import pypsa
 from shapely.geometry import Point
 
-from scripts._helpers import (
-    configure_logging, 
-    mock_snakemake,
-    sanitize_custom_columns
-)
+from scripts._helpers import configure_logging, mock_snakemake, sanitize_custom_columns
 from scripts.add_electricity import load_costs
 from scripts.prepare_sector_network import lossy_bidirectional_links, prepare_costs
 
@@ -615,7 +608,7 @@ def unravel_gasbus(n, costs):
     """
     logger.info("Unraveling gas bus")
 
-    if not "DE" in n.buses:
+    if "DE" not in n.buses:
         n.add("Bus", "DE", location="DE", x=10.5, y=51.2, carrier="none")
 
     ### create DE gas bus/generator/store
@@ -1079,9 +1072,9 @@ def force_connection_nep_offshore(n, current_year):
 
     if int(snakemake.params.offshore_nep_force["delay_years"]) != 0:
         # Modify 'Inbetriebnahmejahr' by adding the delay years for rows where 'Inbetriebnahmejahr' > 2025
-        offshore.loc[
-            offshore["Inbetriebnahmejahr"] > 2025, "Inbetriebnahmejahr"
-        ] += int(snakemake.params.offshore_nep_force["delay_years"])
+        offshore.loc[offshore["Inbetriebnahmejahr"] > 2025, "Inbetriebnahmejahr"] += (
+            int(snakemake.params.offshore_nep_force["delay_years"])
+        )
         logger.info(
             f"Delaying NEP offshore connection points by {snakemake.params.offshore_nep_force['delay_years']} years."
         )
@@ -1139,7 +1132,7 @@ def force_connection_nep_offshore(n, current_year):
         for node in dc_power.index:
             node_off = f"{node} offwind-dc-{current_year}"
 
-            if not node_off in n.generators.index:
+            if node_off not in n.generators.index:
                 logger.info(f"Adding generator {node_off}")
                 n.generators.loc[node_off] = n.generators.loc[nordsee_duck_off]
                 n.generators.at[node_off, "bus"] = node
@@ -1208,7 +1201,7 @@ def force_connection_nep_offshore(n, current_year):
         for node in ac_power.index:
             node_off = f"{node} offwind-ac-{current_year}"
 
-            if not node_off in n.generators.index:
+            if node_off not in n.generators.index:
                 logger.error(
                     f"Assuming all AC projects are connected at locations where other generators exists. That is not the case for {node_off}. Terminating"
                 )
@@ -1235,7 +1228,8 @@ def scale_capacity(n, scaling):
     """
     Scale the output capacity of energy system links based on predefined scaling limits.
 
-    Parameters:
+    Parameters
+    ----------
     - n: The network/model object representing the energy system.
     - scaling: A dictionary with scaling limits structured as
                {year: {region: {carrier: limit}}}.

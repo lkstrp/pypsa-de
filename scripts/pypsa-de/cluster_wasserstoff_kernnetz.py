@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: : 2024 The PyPSA-Eur Authors
 #
 # SPDX-License-Identifier: MIT
@@ -10,8 +9,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-import os
-import sys
 
 import geopandas as gpd
 import pandas as pd
@@ -43,11 +40,13 @@ def split_line_by_length(line, segment_length_km):
     """
     Split a Shapely LineString into segments of a specified length.
 
-    Parameters:
+    Parameters
+    ----------
     - line (LineString): The original LineString to be split.
     - segment_length_km (float): The desired length of each resulting segment in kilometers.
 
-    Returns:
+    Returns
+    -------
     list: A list of Shapely LineString objects representing the segments.
     """
 
@@ -96,11 +95,13 @@ def divide_pipes(df, segment_length=10):
     Divide a GeoPandas DataFrame of LineString geometries into segments of a
     specified length.
 
-    Parameters:
+    Parameters
+    ----------
     - df (GeoDataFrame): The input DataFrame containing LineString geometries.
     - segment_length (float): The desired length of each resulting segment in kilometers.
 
-    Returns:
+    Returns
+    -------
     GeoDataFrame: A new GeoDataFrame with additional rows representing the segmented pipes.
     """
 
@@ -224,7 +225,7 @@ if __name__ == "__main__":
     if kernnetz_cf["divide_pipes"] & (not kernnetz_cf["aggregate_parallel_pipes"]):
         # Set length to 0 for duplicates from the 2nd occurrence onwards and make name unique
         logger.info(
-            f"Setting length to 0 for split pipes as Kernnetz pipes are segmented (divide pipes: {kernnetz_cf["divide_pipes"]}) and parallel pipes not aggregated (aggregate_parallel_pipes: {kernnetz_cf["aggregate_parallel_pipes"]})."
+            f"Setting length to 0 for split pipes as Kernnetz pipes are segmented (divide pipes: {kernnetz_cf['divide_pipes']}) and parallel pipes not aggregated (aggregate_parallel_pipes: {kernnetz_cf['aggregate_parallel_pipes']})."
         )
         wasserstoff_kernnetz["occurrence"] = (
             wasserstoff_kernnetz.groupby("name").cumcount() + 1

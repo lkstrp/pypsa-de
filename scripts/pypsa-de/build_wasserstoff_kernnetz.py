@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: : 2020-2023 The PyPSA-Eur Authors
 #
 # SPDX-License-Identifier: MIT
@@ -434,7 +433,7 @@ def create_border_crossing(wkn, regions_onshore, regions_offshore):
     de = regions[regions.country.isin(["DE"])].union_all()
 
     # Handle MultiPolygon case
-    if de.geom_type == 'MultiPolygon':
+    if de.geom_type == "MultiPolygon":
         largest_polygon = sorted(list(de.geoms), key=lambda x: x.area, reverse=True)[0]
         de_border = largest_polygon.exterior
     else:
@@ -510,7 +509,8 @@ def filter_kernnetz(
     Filters the projects in the wkn DataFrame based on IPCEI participation and
     build years.
 
-    Parameters:
+    Parameters
+    ----------
     wkn : DataFrame
         The DataFrame containing project data for Wasserstoff Kernnetz.
 
@@ -525,7 +525,8 @@ def filter_kernnetz(
         If True, IPCEI and PCI projects are included, even if their 'build_year' exceeds the cutoff year,
         but non-IPCEI and non-PCI projects are still excluded beyond the cutoff year.
 
-    Returns:
+    Returns
+    -------
     DataFrame
         A filtered DataFrame based on the provided conditions.
     """

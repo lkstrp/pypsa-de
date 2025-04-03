@@ -7,8 +7,6 @@ horizon.
 """
 
 import logging
-import os
-import sys
 from types import SimpleNamespace
 
 import country_converter as coco
@@ -25,9 +23,7 @@ from scripts._helpers import (
     update_config_from_wildcards,
 )
 from scripts.add_electricity import sanitize_carriers
-from scripts.definitions.heat_sector import HeatSector
 from scripts.definitions.heat_system import HeatSystem
-from scripts.definitions.heat_system_type import HeatSystemType
 from scripts.prepare_sector_network import (
     cluster_heat_buses,
     define_spatial,
@@ -516,7 +512,9 @@ def add_chp_plants(n, grouping_years, costs, baseyear):
     chp["lifetime"] = (chp.DateOut - chp["grouping_year"] + 1).fillna(
         snakemake.params.costs["fill_values"]["lifetime"]
     )
-    chp = chp.loc[chp.grouping_year + chp.lifetime > baseyear] # in add_brownfield this is build_year + lifetime <= baseyear
+    chp = chp.loc[
+        chp.grouping_year + chp.lifetime > baseyear
+    ]  # in add_brownfield this is build_year + lifetime <= baseyear
 
     # check if the CHPs were read in from MaStR for Germany
     if "Capacity_thermal" in chp.columns:

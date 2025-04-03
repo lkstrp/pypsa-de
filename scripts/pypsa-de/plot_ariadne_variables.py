@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-import os
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -468,7 +465,7 @@ def plot_NEP(df, savepath=None, gleichschaltung=True, currency_year=2020):
     plt.text(
         1.05,
         0.95,
-        f"NEP: {round(plotframe.loc["Onshore","NEP-Total"] + plotframe.loc["Offshore","NEP-Total"],1)}",
+        f"NEP: {round(plotframe.loc['Onshore', 'NEP-Total'] + plotframe.loc['Offshore', 'NEP-Total'], 1)}",
         transform=plt.gca().transAxes,
         fontsize=12,
         verticalalignment="top",
@@ -477,7 +474,7 @@ def plot_NEP(df, savepath=None, gleichschaltung=True, currency_year=2020):
     plt.text(
         1.05,
         0.85,
-        f"PyPSA: {round(plotframe.loc["Onshore","PyPSA-Total"] + plotframe.loc["Offshore","PyPSA-Total"],1)}",
+        f"PyPSA: {round(plotframe.loc['Onshore', 'PyPSA-Total'] + plotframe.loc['Offshore', 'PyPSA-Total'], 1)}",
         transform=plt.gca().transAxes,
         fontsize=12,
         verticalalignment="top",
