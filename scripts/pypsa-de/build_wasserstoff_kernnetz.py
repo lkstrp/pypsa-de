@@ -7,9 +7,6 @@ Preprocess hydrogen kernnetz based on data from FNB Gas
 """
 
 import logging
-
-logger = logging.getLogger(__name__)
-
 import os
 import sys
 import uuid
@@ -25,6 +22,7 @@ from shapely.ops import nearest_points
 from scripts._helpers import configure_logging, mock_snakemake
 from scripts.build_gas_network import diameter_to_capacity
 
+logger = logging.getLogger(__name__)
 MANUAL_ADDRESSES = {
     "Oude Statenzijl": (7.205108658430258, 53.20183834422634),
     "Helgoland": (7.882663327316698, 54.183393795580166),
@@ -256,7 +254,7 @@ def geocode_locations(df):
     try:
         from geopy.extra.rate_limiter import RateLimiter
         from geopy.geocoders import Nominatim
-    except:
+    except ImportError:
         raise ModuleNotFoundError(
             "Optional dependency 'geopy' not found."
             "Install via 'conda install -c conda-forge geopy'"

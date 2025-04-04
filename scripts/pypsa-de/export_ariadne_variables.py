@@ -260,7 +260,7 @@ def _get_h2_fossil_fraction(n):
 
 
 def _get_t_sum(df, df_t, carrier, region, snapshot_weightings, port):
-    if type(carrier) == list:
+    if isinstance(carrier, list):
         return sum(
             [
                 _get_t_sum(df, df_t, car, region, snapshot_weightings, port)
@@ -291,7 +291,7 @@ def sum_load(n, carrier, region):
 
 
 def sum_co2(n, carrier, region):
-    if type(carrier) == list:
+    if isinstance(carrier, list):
         return sum([sum_co2(n, car, region) for car in carrier])
     try:
         port = (
@@ -3363,10 +3363,6 @@ def get_prices(n, region):
 
     var = pd.Series()
 
-    kwargs = {
-        "groupby": ["name", "bus", "carrier"],
-        "nice_names": False,
-    }
     try:
         co2_limit_de = n.global_constraints.loc["co2_limit-DE", "mu"]
     except KeyError:
@@ -3976,7 +3972,7 @@ def get_grid_investments(
         & (n.links.bus0 + n.links.bus1).str.contains(region)
         & ~n.links.reversed
     ]
-    current_year = n.generators.build_year.max()
+    current_year = n.generators.build_year.max()  # noqa
     nep_dc = dc_links.query(
         "(index.str.startswith('DC') or index.str.startswith('TYNDP')) and build_year > 2025 and (@current_year - 5 < build_year <= @current_year)"
     ).index
@@ -4728,12 +4724,8 @@ def get_operational_and_capital_costs(year):
         "waste CHP CC": "waste CHP CC",
         # Heat capacities
         # TODO Check the units of the investments
-        "DAC": "direct air capture",
         "Fischer-Tropsch": None,  #'Fischer-Tropsch' * "efficiency" ,
-        "H2 Electrolysis": "electrolysis",
-        "H2 Fuel Cell": "fuel cell",
         "Sabatier": "methanation",
-        "methanolisation": "methanolisation",
         # 'urban central air heat pump': 'central air-sourced heat pump',
         # 'urban central coal CHP': 'central coal CHP',
         # 'urban central gas CHP': 'central gas CHP',
@@ -4754,14 +4746,12 @@ def get_operational_and_capital_costs(year):
         "rural gas boiler": "decentral gas boiler",
         #'rural ground heat pump': None,
         "rural oil boiler": "decentral oil boiler",
-        "rural resistive heater": "decentral resistive heater",
         "rural water tanks charger": "water tank charger",
         "rural water tanks discharger": "water tank discharger",
         #'urban decentral air heat pump': None,
         "urban decentral biomass boiler": "biomass boiler",
         "urban decentral gas boiler": "decentral gas boiler",
         "urban decentral oil boiler": "decentral oil boiler",
-        "urban decentral resistive heater": "decentral resistive heater",
         "urban decentral water tanks charger": "water tank charger",
         "urban decentral water tanks discharger": "water tank discharger",
         # Other capacities
@@ -4907,7 +4897,7 @@ def get_grid_capacity(n, region, year):
     ] *= 0.5
 
     # NEP subsets
-    current_year = n.generators.build_year.max()
+    current_year = n.generators.build_year.max()  # noqa
     nep_dc = dc_links.query(
         "(index.str.startswith('DC') or index.str.startswith('TYNDP')) and build_year > 2025 and (@current_year - 5 < build_year <= @current_year)"
     ).index
@@ -5238,11 +5228,14 @@ def process_postnetworks(n, n_start, model_year, snakemake, costs):
     n.links.loc[h2_links_kern, "overnight_cost"] = overnight_costs
 
     logger.info("Post-Discretizing DC links")
-    _dc_lambda = lambda x: get_discretized_value(
-        x,
-        post_discretization["link_unit_size"]["DC"],
-        post_discretization["link_threshold"]["DC"],
-    )
+
+    def _dc_lambda(x):
+        return get_discretized_value(
+            x,
+            post_discretization["link_unit_size"]["DC"],
+            post_discretization["link_threshold"]["DC"],
+        )
+
     dc_links = n.links.query("carrier == 'DC'").index
     for attr in ["p_nom_opt", "p_nom", "p_nom_min"]:
         # The values  in p_nom_opt may already be discretized, here we make sure that
@@ -5253,11 +5246,14 @@ def process_postnetworks(n, n_start, model_year, snakemake, costs):
     p_nom_start = n_start.links.loc[dc_links, "p_nom"].apply(_dc_lambda)
 
     logger.info("Post-Discretizing AC lines")
-    _ac_lambda = lambda x: get_discretized_value(
-        x,
-        post_discretization["line_unit_size"],
-        post_discretization["line_threshold"],
-    )
+
+    def _ac_lambda(x):
+        return get_discretized_value(
+            x,
+            post_discretization["line_unit_size"],
+            post_discretization["line_threshold"],
+        )
+
     for attr in ["s_nom_opt", "s_nom", "s_nom_min"]:
         # The values  in s_nom_opt may already be discretized, here we make sure that
         # the same logic is applied to s_nom and s_nom_min

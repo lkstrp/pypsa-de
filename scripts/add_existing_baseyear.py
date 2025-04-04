@@ -23,6 +23,7 @@ from scripts._helpers import (
     update_config_from_wildcards,
 )
 from scripts.add_electricity import sanitize_carriers
+from scripts.build_powerplants import add_custom_powerplants
 from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_sector_network import (
     cluster_heat_buses,
@@ -34,8 +35,6 @@ logger = logging.getLogger(__name__)
 cc = coco.CountryConverter()
 idx = pd.IndexSlice
 spatial = SimpleNamespace()
-
-from scripts.build_powerplants import add_custom_powerplants
 
 
 def add_build_year_to_new_assets(n: pypsa.Network, baseyear: int) -> None:
@@ -496,8 +495,8 @@ def add_chp_plants(n, grouping_years, costs, baseyear):
 
     # drop assets which are already phased out / decommissioned
     # drop hydro, waste and oil fueltypes for CHP
-    limit = np.max(grouping_years)
-    drop_fueltypes = ["Hydro", "Other", "Waste", "nicht biogener Abfall"]
+    limit = np.max(grouping_years)  # noqa
+    drop_fueltypes = ["Hydro", "Other", "Waste", "nicht biogener Abfall"]  # noqa
     chp = ppl.query(
         "Set == 'CHP' and (DateOut >= @baseyear or DateOut != DateOut) and (DateIn <= @limit or DateIn != DateIn) and Fueltype not in @drop_fueltypes"
     ).copy()
@@ -1052,7 +1051,6 @@ def add_heating_capacities_installed_before_baseyear(
             )
 
             # delete links with capacities below threshold
-            threshold = snakemake.params.existing_capacities["threshold_capacity"]
             n.remove(
                 "Link",
                 [

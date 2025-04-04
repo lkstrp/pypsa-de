@@ -77,7 +77,6 @@ def read_csv(input, output):
             keys=network_labels,
         )
         # get plot label and drop from index
-        label = df.columns.get_level_values(1).unique()[0]
         df.columns = df.columns.droplevel(1)
     except Exception as e:
         print(f"Error reading csv file for {output}: {e}")

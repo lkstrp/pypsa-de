@@ -314,12 +314,10 @@ carriers_in_german = {
     "gas CHP CC": "Gas KWK mit CO2-Abscheidung",
     "urban central coal CHP": "Steinkohle-KWK",
     "Electricity trade": "Stromhandel",
-    "urban central gas CHP": "Gas-KWK",
     "urban central biomass CHP": "Biomasse-KWK",
     "biomass CHP": "Biomasse-KWK",
     "air heat pump": "Luftwärmepumpe",
     "Electricity load": "Stromlast",
-    "methanolisation": "Methanolisierung",
     "resistive heater": "Widerstandsheizung",
     "gas boiler": "Gaskessel",
     "H2 Electrolysis": "Elektrolyse",
@@ -411,8 +409,6 @@ def plot_nodal_elec_balance(
 
     mask = nodal_balance.index.get_level_values("bus_carrier").isin(carriers)
     nb = nodal_balance[mask].groupby("carrier").sum().div(1e3).T.loc[period]
-    if plot_loads:
-        df_loads = abs(nb[loads].sum(axis=1))
     # condense groups (summarise carriers to groups)
     nb = get_condense_sum(nb, c1_groups, c1_groups_name)
     # rename unhandy column names
@@ -540,9 +536,9 @@ def plot_nodal_elec_balance(
     ax = df_pos.plot.area(ax=ax, stacked=True, color=pos_c, linewidth=0.0)
 
     # rename negative values that are also present on positive side, so that they are not shown and plot negative values
-    f = lambda c: "out_" + c
-    cols = [f(c) if (c in df_pos.columns) else c for c in df_neg.columns]
-    cols_map = dict(zip(df_neg.columns, cols))
+    def f(c):
+        "out_" + c
+
     df_neg = df_neg.drop(columns=["Electricity trade"], errors="ignore")
     df_neg["Sonstige"] = df_neg.drop(columns=preferred_order_neg, errors="ignore").sum(
         axis=1
@@ -755,7 +751,9 @@ def plot_nodal_heat_balance(
     ax = df_pos.plot.area(ax=ax, stacked=True, color=c_pos, linewidth=0.0)
 
     # rename negative values that are also present on positive side, so that they are not shown and plot negative values
-    f = lambda c: "out_" + c
+    def f(c):
+        "out_" + c
+
     cols = [f(c) if (c in df_pos.columns) else c for c in df_neg.columns]
     cols_map = dict(zip(df_neg.columns, cols))
     ax = df_neg.rename(columns=cols_map).plot.area(
@@ -1027,9 +1025,6 @@ def plot_storage(
                 .sum()
                 .sum()
             )
-            gen = n.storage_units_t.p_dispatch.loc[
-                period, n.storage_units.carrier == carriers[i]
-            ].sum(axis=1)
             index = n.storage_units[n.storage_units.carrier == c].index
             max_stor_cap = (n.storage_units.max_hours * n.storage_units.p_nom_opt)[
                 index
@@ -1468,7 +1463,6 @@ def plot_elec_prices_spatial(
     pypsa_netzentgelt = (6.53 + 27.51) / 1.237
     nep_netzentgelt = (15.82 + 27.51) / 1.237
     elec_price_de = df["elec_price"][df.index.str.contains("DE")]
-    max_above_mean = elec_price_de.max() - elec_price_de.mean()
 
     # Calculate the difference from the mean_with_netzentgelt
 
@@ -2542,128 +2536,6 @@ def plot_cap_map_de(
     ax.set_title(f"Installierte Leistung Stromsektor Technologiemix {year} [GW]")
     fig.savefig(savepath, bbox_inches="tight")
     plt.close()
-
-
-def plot_elec_trade(
-    networks,
-    planning_horizons,
-    tech_colors,
-    savepath,
-):
-    incoming_elec = []
-    outgoing_elec = []
-    for year in planning_horizons:
-        n = networks[planning_horizons.index(year)]
-        incoming_lines = n.lines[
-            (n.lines.bus0.str[:2] != "DE") & (n.lines.bus1.str[:2] == "DE")
-        ].index
-        outgoing_lines = n.lines[
-            (n.lines.bus0.str[:2] == "DE") & (n.lines.bus1.str[:2] != "DE")
-        ].index
-        incoming_links = n.links[
-            (n.links.carrier == "DC")
-            & (n.links.bus0.str[:2] != "DE")
-            & (n.links.bus1.str[:2] == "DE")
-        ].index
-        outgoing_links = n.links[
-            (n.links.carrier == "DC")
-            & (n.links.bus0.str[:2] == "DE")
-            & (n.links.bus1.str[:2] != "DE")
-        ].index
-        # positive when withdrawing power from bus0/bus1
-        incoming = n.lines_t.p1[incoming_lines].sum(axis=1).mul(
-            n.snapshot_weightings.generators, axis=0
-        ) + n.links_t.p1[incoming_links].sum(axis=1).mul(
-            n.snapshot_weightings.generators, axis=0
-        )
-        outgoing = n.lines_t.p0[outgoing_lines].sum(axis=1).mul(
-            n.snapshot_weightings.generators, axis=0
-        ) + n.links_t.p0[outgoing_links].sum(axis=1).mul(
-            n.snapshot_weightings.generators, axis=0
-        )
-        incoming_elec.append(
-            incoming[incoming < 0].abs().sum() + outgoing[outgoing > 0].sum()
-        )
-        outgoing_elec.append(
-            incoming[incoming > 0].sum() + outgoing[outgoing < 0].abs().sum()
-        )
-    elec_import = np.array(incoming_elec) / 1e6
-    elec_export = -np.array(outgoing_elec) / 1e6
-    net = elec_import + elec_export
-    x = np.arange(len(planning_horizons))
-
-    fig, ax = plt.subplots(figsize=(6, 4))
-    ax.bar(x, elec_import, color=tech_colors["AC"], label="Import")
-    ax.bar(x, elec_export, color="#3f630f", label="Export")
-    ax.scatter(x, net, color="black", marker="x", label="Netto")
-
-    ax.set_xticks(x)
-    ax.set_xticklabels(planning_horizons)
-    ax.axhline(0, color="black", linewidth=0.5)
-    ax.set_ylabel("Strom [TWh]")
-    ax.set_title("Strom Import/Export Deutschland")
-    ax.legend()
-
-    plt.tight_layout()
-    fig.savefig(savepath, bbox_inches="tight")
-
-
-def plot_h2_trade(
-    networks,
-    planning_horizons,
-    tech_colors,
-    savepath,
-):
-    incoming_h2 = []
-    outgoing_h2 = []
-    for year in planning_horizons:
-        n = networks[planning_horizons.index(year)]
-        incoming_links = n.links[
-            (n.links.carrier.str.contains("H2 pipeline"))
-            & (n.links.bus0.str[:2] != "DE")
-            & (n.links.bus1.str[:2] == "DE")
-        ].index
-        outgoing_links = n.links[
-            (n.links.carrier.str.contains("H2 pipeline"))
-            & (n.links.bus0.str[:2] == "DE")
-            & (n.links.bus1.str[:2] != "DE")
-        ].index
-        # positive when withdrawing power from bus0/bus1
-        incoming = (
-            n.links_t.p1[incoming_links]
-            .sum(axis=1)
-            .mul(n.snapshot_weightings.generators, axis=0)
-        )
-        outgoing = (
-            n.links_t.p0[outgoing_links]
-            .sum(axis=1)
-            .mul(n.snapshot_weightings.generators, axis=0)
-        )
-        incoming_h2.append(
-            incoming[incoming < 0].abs().sum() + outgoing[outgoing > 0].sum()
-        )
-        outgoing_h2.append(
-            incoming[incoming > 0].sum() + outgoing[outgoing < 0].abs().sum()
-        )
-    h2_import = np.array(incoming_h2) / 1e6
-    h2_export = -np.array(outgoing_h2) / 1e6
-    net = h2_import + h2_export
-    x = np.arange(len(planning_horizons))
-
-    fig, ax = plt.subplots(figsize=(6, 4))
-    ax.bar(x, h2_import, color=tech_colors["H2 pipeline"], label="Import")
-    ax.bar(x, h2_export, color=tech_colors["H2 pipeline (Kernnetz)"], label="Export")
-    ax.scatter(x, net, color="black", marker="x", label="Netto")
-
-    ax.set_xticks(x)
-    ax.set_xticklabels(planning_horizons)
-    ax.axhline(0, color="black", linewidth=0.5)
-    ax.set_ylabel("H2 [TWh]")
-    ax.set_title("Wasserstoff Import/Export Deutschland")
-    ax.legend()
-
-    plt.tight_layout()
-    fig.savefig(savepath, bbox_inches="tight")
 
 
 def plot_elec_trade(

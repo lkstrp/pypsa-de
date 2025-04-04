@@ -16,11 +16,11 @@ This includes
 
 import logging
 
-logger = logging.getLogger(__name__)
 import pandas as pd
 
 from scripts._helpers import configure_logging, mock_snakemake
 
+logger = logging.getLogger(__name__)
 if __name__ == "__main__":
     if "snakemake" not in globals():
         snakemake = mock_snakemake(

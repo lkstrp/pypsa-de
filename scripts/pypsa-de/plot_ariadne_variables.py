@@ -188,10 +188,6 @@ def plot_Kernnetz(df, savepath=None, currency_year=2020):
     # Set up the plot
     fig, ax = plt.subplots(1, 2, figsize=(10, 6))
 
-    # Create bars
-    bar_width = 0.35
-    x = np.arange(2)  # Three groups
-
     group1 = [
         "Kernnetz-Zubau",
         "Kernnetz-Umstellung",

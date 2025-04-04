@@ -3375,7 +3375,9 @@ def add_biomass(
     if options["solid_biomass_import"].get("enable", False):
         biomass_import_price = options["solid_biomass_import"]["price"]
         # convert TWh in MWh
-        biomass_import_max_amount = options["solid_biomass_import"]["max_amount"] * 1e6 * nyears
+        biomass_import_max_amount = (
+            options["solid_biomass_import"]["max_amount"] * 1e6 * nyears
+        )
         biomass_import_upstream_emissions = options["solid_biomass_import"][
             "upstream_emissions_factor"
         ]
@@ -3432,10 +3434,6 @@ def add_biomass(
             marginal_cost=costs.at["biogas", "fuel"],
             e_sum_min=unsustainable_biogas_potentials_spatial,
             e_sum_max=unsustainable_biogas_potentials_spatial,
-        )
-
-        e_max_pu = pd.DataFrame(
-            1, index=n.snapshots, columns=spatial.biomass.nodes_unsustainable
         )
 
         n.add(

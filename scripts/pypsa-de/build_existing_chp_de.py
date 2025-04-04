@@ -9,12 +9,12 @@ Using BNetzA data to get a high resolution map of German CHP plants.
 
 import logging
 
-logger = logging.getLogger(__name__)
-
 import geopandas as gpd
 import pandas as pd
 
 from scripts._helpers import configure_logging, mock_snakemake
+
+logger = logging.getLogger(__name__)
 
 
 def clean_data(combustion, biomass, geodata):

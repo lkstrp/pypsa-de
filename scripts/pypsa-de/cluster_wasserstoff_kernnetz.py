@@ -7,9 +7,6 @@ Cluster Wasserstoff Kernnetz to clustered model regions.
 
 import logging
 
-logger = logging.getLogger(__name__)
-
-
 import geopandas as gpd
 import pandas as pd
 import pyproj
@@ -21,6 +18,7 @@ from shapely.ops import transform
 from scripts._helpers import configure_logging, mock_snakemake
 from scripts.cluster_gas_network import load_bus_regions, reindex_pipes
 
+logger = logging.getLogger(__name__)
 # Define a function for projecting points to meters
 project_to_meters = pyproj.Transformer.from_proj(
     pyproj.Proj("epsg:4326"),  # assuming WGS84

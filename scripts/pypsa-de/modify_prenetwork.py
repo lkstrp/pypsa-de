@@ -184,7 +184,7 @@ def add_wasserstoff_kernnetz(n, wkn, costs):
     # get previous planning horizon
     planning_horizons = snakemake.params.planning_horizons
     i = planning_horizons.index(int(snakemake.wildcards.planning_horizons))
-    previous_investment_year = int(planning_horizons[i - 1]) if i != 0 else 2015
+    previous_investment_year = int(planning_horizons[i - 1]) if i != 0 else 2015  # noqa
 
     # use only pipes added since the previous investment period
     wkn_new = wkn.query(
@@ -832,9 +832,7 @@ def aladin_mobility_demand(n):
     # get aladin data
     aladin_demand = pd.read_csv(snakemake.input.aladin_demand, index_col=0)
 
-    simulation_period_correction_factor = (
-        n.snapshot_weightings.objective.sum() / 8760
-    ) 
+    simulation_period_correction_factor = n.snapshot_weightings.objective.sum() / 8760
 
     # oil demand
     oil_demand = aladin_demand.Liquids * simulation_period_correction_factor
